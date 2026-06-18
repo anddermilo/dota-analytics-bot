@@ -3,6 +3,8 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 import aiohttp
+from aiohttp import web
+import asyncio
 import time
 from dotenv import load_dotenv
 
@@ -148,9 +150,21 @@ class CounterSelectView(discord.ui.View):
             tabs_view = CounterTabsView(c, hero_name, embed_pantalla, self)
             await tabs_view.render(interaction)
         return a_ejecutar
-
+async def servidor_fantasma():
+    app = web.Application()
+    app.router.add_get('/', lambda request: web.Response(text="Bot encendido y funcionando gratis en Render."))
+    runner = web.AppRunner(app)
+    await runner.setup()
+    puerto = int(os.environ.get("PORT", 8080))
+    site = web.TCPSite(runner, '0.0.0.0', puerto)
+    await site.start()
+    print(f"🌐 Servidor fantasma iniciado en puerto {puerto} para Render.")
+    
 @bot.event
 async def on_ready():
+    # Encendemos el servidor fantasma junto con el bot
+    bot.loop.create_task(servidor_fantasma())
+    
     print(f'⚡ DOTA ANALYTICS PRO - DESPLIEGUE SEGURO COMPLETO ⚡')
     try:
         mi_servidor = discord.Object(id=1515013096316473506)
