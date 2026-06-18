@@ -1,6 +1,6 @@
 fastapi==0.104.1
 uvicorn==0.24.0
-ppsycopg2-binary
+psycopg2-binary
 requests==2.31.0
 discord.py==2.3.2
 aiohttp==3.9.1
