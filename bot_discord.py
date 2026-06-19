@@ -1,3 +1,4 @@
+# --- TUS IMPORTS ORIGINALES (INTACTOS) ---
 import os
 import discord
 from discord.ext import commands
@@ -6,8 +7,37 @@ import aiohttp
 from aiohttp import web
 import asyncio
 import time
-from dotenv import load_dotenv
+from dotenv import load_dotenv 
 
+# --- NUEVAS LIBRERÍAS PARA EL SERVIDOR FANTASMA (UPTIMER) ---
+import threading
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+# --- SERVIDOR FANTASMA NATIVO (ULTRA RÁPIDO PARA UPTIMEROBOT) ---
+class ManejadorPing(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+        self.wfile.write(b"Bot encendido y respondiendo al instante.")
+    
+    def log_message(self, format, *args):
+        pass # Evita llenar la consola de Render con mensajes basura cada 10 minutos
+
+def mantener_vivo():
+    puerto = int(os.environ.get("PORT", 10000))
+    servidor = HTTPServer(('0.0.0.0', puerto), ManejadorPing)
+    print(f"🌐 Servidor fantasma nativo iniciado en el puerto {puerto}")
+    servidor.serve_forever()
+
+# Se inicia en un hilo paralelo en el milisegundo 1
+hilo = threading.Thread(target=mantener_vivo, daemon=True)
+hilo.start()
+
+
+# Iniciar el servidor web en el milisegundo 1, antes de que Discord cargue
+hilo = threading.Thread(target=mantener_vivo, daemon=True)
+hilo.start()
 # --- SISTEMA DE CONTROL DEFENSIVO DE ENTORNO (WINDOWS PROOF) ---
 ruta_actual = os.path.dirname(os.path.abspath(__file__))
 ruta_env = os.path.join(ruta_actual, '.env')
@@ -150,21 +180,9 @@ class CounterSelectView(discord.ui.View):
             tabs_view = CounterTabsView(c, hero_name, embed_pantalla, self)
             await tabs_view.render(interaction)
         return a_ejecutar
-async def servidor_fantasma():
-    app = web.Application()
-    app.router.add_get('/', lambda request: web.Response(text="Bot encendido y funcionando gratis en Render."))
-    runner = web.AppRunner(app)
-    await runner.setup()
-    puerto = int(os.environ.get("PORT", 8080))
-    site = web.TCPSite(runner, '0.0.0.0', puerto)
-    await site.start()
-    print(f"🌐 Servidor fantasma iniciado en puerto {puerto} para Render.")
     
 @bot.event
 async def on_ready():
-    # Encendemos el servidor fantasma junto con el bot
-    bot.loop.create_task(servidor_fantasma())
-    
     print(f'⚡ DOTA ANALYTICS PRO - DESPLIEGUE SEGURO COMPLETO ⚡')
     try:
         mi_servidor = discord.Object(id=1515013096316473506)
