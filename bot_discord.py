@@ -195,10 +195,9 @@ class CounterSelectView(discord.ui.View):
 async def on_ready():
     print(f'⚡ DOTA ANALYTICS PRO - DESPLIEGUE SEGURO COMPLETO ⚡')
     try:
-        mi_servidor = discord.Object(id=1517568220587098192)
-        bot.tree.copy_global_to(guild=mi_servidor)
-        synced = await bot.tree.sync(guild=mi_servidor)
-        print(f"Comandos sincronizados de forma nativa: {len(synced)}")
+        # Sincronización global: registra los comandos en todo Discord
+        synced = await bot.tree.sync()
+        print(f"Comandos sincronizados globalmente: {len(synced)}")
     except Exception as e:
         print(f"Error en sincronización: {e}")
 
