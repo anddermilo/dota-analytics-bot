@@ -11,23 +11,33 @@ from dotenv import load_dotenv
 
 # --- NUEVAS LIBRERÍAS PARA EL SERVIDOR FANTASMA (UPTIMER) ---
 import threading
-from http.server import BaseHTTPRequestHandler, HTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 # --- SERVIDOR FANTASMA NATIVO (ULTRA RÁPIDO PARA UPTIMEROBOT) ---
+# --- SERVIDOR FANTASMA NATIVO (BLINDADO ANTI-502) ---
 class ManejadorPing(BaseHTTPRequestHandler):
+    # Responde a peticiones normales (Navegador)
     def do_GET(self):
         self.send_response(200)
         self.send_header('Content-type', 'text/plain')
         self.end_headers()
         self.wfile.write(b"Bot encendido y respondiendo al instante.")
     
+    # Responde a los "toques silenciosos" de UptimeRobot
+    def do_HEAD(self):
+        self.send_response(200)
+        self.send_header('Content-type', 'text/plain')
+        self.end_headers()
+    
+    # Evita saturar la consola de Render
     def log_message(self, format, *args):
-        pass # Evita llenar la consola de Render con mensajes basura cada 10 minutos
+        pass
 
 def mantener_vivo():
     puerto = int(os.environ.get("PORT", 10000))
-    servidor = HTTPServer(('0.0.0.0', puerto), ManejadorPing)
-    print(f"🌐 Servidor fantasma nativo iniciado en el puerto {puerto}")
+    # Usamos ThreadingHTTPServer para que no se congele si hay múltiples pings
+    servidor = ThreadingHTTPServer(('0.0.0.0', puerto), ManejadorPing)
+    print(f"🌐 Servidor fantasma multihilo iniciado en el puerto {puerto}")
     servidor.serve_forever()
 
 # Se inicia en un hilo paralelo en el milisegundo 1
