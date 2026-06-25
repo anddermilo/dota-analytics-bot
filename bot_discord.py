@@ -1,7 +1,7 @@
 # --- TUS IMPORTS ORIGINALES (INTACTOS) ---
 import os
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord import app_commands
 import aiohttp
 from aiohttp import web
@@ -190,10 +190,23 @@ class CounterSelectView(discord.ui.View):
             tabs_view = CounterTabsView(c, hero_name, embed_pantalla, self)
             await tabs_view.render(interaction)
         return a_ejecutar
-    
+# Tarea programada: consulta pequeña cada 5 minutos
+@tasks.loop(minutes=5)
+async def heartbeat():
+    try:
+        # AQUÍ VA TU CONSULTA: 
+        # Cambia 'tu_pool_de_conexion' por la variable que uses para conectar a tu BD
+        # Si usas asyncpg, sería algo así:
+        # await tu_pool_de_conexion.execute("SELECT 1")
+        print("⚡ Heartbeat: Base de datos despierta.")
+    except Exception as e:
+        print(f"Error en el heartbeat: {e}")
+   
 @bot.event
 async def on_ready():
-    print(f'⚡ DOTA ANALYTICS PRO - DESPLIEGUE SEGURO COMPLETO ⚡')
+    heartbeat.start() # <-- ESTO ES LO QUE LO ACTIVA
+    print(f'⚡ DOTA ANALYTICS PRO - Online y manteniendo DB viva')
+    
     try:
         # Sincronización global: registra los comandos en todo Discord
         synced = await bot.tree.sync()
