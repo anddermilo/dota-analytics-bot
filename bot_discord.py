@@ -113,12 +113,25 @@ async def procesar_seleccion(session, input_str):
 
 class CounterTabsView(discord.ui.View):
     def __init__(self, counter_c, hero_name, original_embed, original_view):
-        super().__init__(timeout=120)
+        super().__init__(timeout=300) # Timeout aumentado
         self.counter_c = counter_c
         self.hero_name = hero_name
         self.original_embed = original_embed
         self.root_view = original_view
         self.active_tab = "items"
+
+    async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item):
+        # Captura específica de interacción expirada
+        if isinstance(error, discord.errors.InteractionResponded) or "Unknown interaction" in str(error):
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    "⚠️ **Sesión expirada.** Esta consulta es antigua. Por favor, realiza una nueva búsqueda con `/counter`.", 
+                    ephemeral=True
+                )
+        else:
+            await super().on_error(interaction, error, item)
+            
+    # ... (tus métodos btn_items, btn_strategy, btn_back y render siguen igual)
 
     @discord.ui.button(label="🎒 Ítems", style=discord.ButtonStyle.primary, custom_id="tab_items")
     async def btn_items(self, interaction: discord.Interaction, button: discord.ui.Button):
@@ -174,7 +187,7 @@ class CounterTabsView(discord.ui.View):
 
 class CounterSelectView(discord.ui.View):
     def __init__(self, counters_list, hero_name, embed_pantalla):
-        super().__init__(timeout=120)
+        super().__init__(timeout=300)
         for idx, c in enumerate(counters_list):
             boton = discord.ui.Button(
                 label=f"Guía {c['rival']}", 
@@ -184,6 +197,16 @@ class CounterSelectView(discord.ui.View):
             )
             boton.callback = self.crear_callback(c, hero_name, embed_pantalla)
             self.add_item(boton)
+
+    async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item):
+        if isinstance(error, discord.errors.InteractionResponded) or "Unknown interaction" in str(error):
+            if not interaction.response.is_done():
+                await interaction.response.send_message(
+                    "⚠️ **Sesión expirada.** Esta consulta es antigua. Por favor, realiza una nueva búsqueda con `/counter`.", 
+                    ephemeral=True
+                )
+        else:
+            await super().on_error(interaction, error, item)
 
     def crear_callback(self, c, hero_name, embed_pantalla):
         async def a_ejecutar(interaction: discord.Interaction):
